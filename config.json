@@ -1,0 +1,16 @@
+{
+    "redis": {
+        "host": "127.0.0.1",
+        "port": "32768",
+        "db":0
+    },
+    "socket":{
+        "name":"A",
+        "pw":"123456",
+        "host":"http://localhost:3000"
+    },
+    "cordova":{
+        "folder":"cordova",
+        "dist":"apk"
+    }
+}
