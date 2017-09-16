@@ -16,12 +16,8 @@ client({
     job:{
         name:'apkbuilder',
         process:function(done,job){
-            console.log('Start');
-            job.progress(10);
-            setTimeout(function(){
-                job.progress(100);
-                done();
-            },5000);
+            //define job
+            done();
         }
     }
 },function(socket){
