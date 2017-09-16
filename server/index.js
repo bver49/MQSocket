@@ -4,17 +4,7 @@ var server = require('http').Server(app);
 var mq = require('./server');
 var config = require('./config.json');
 
-app.use(mq(server,{
-    redis:{
-        host: '127.0.0.1',
-        port: '32768',
-        db:0
-    },
-    job:{
-        name:'jobA',
-        limitsec:30
-    }
-}));
+app.use(mq(server));
 
 app.use(mq(server,{
     redis:{

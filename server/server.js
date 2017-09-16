@@ -2,27 +2,35 @@ var Queue = require('bull');
 var socketio = require('socket.io');
 
 module.exports = function(server, option) {
+
     var io = socketio(server);
     var connectSocket = {};
 
+    option = option || {};
     option.socket = option.socket || {};
     option.socket.pw = option.socket.pw || '';
+    option.job = option.job || {};
     option.job.name = option.job.name || 'job'
+    option.redis = option.redis || {};
 
     var jobQueue = new Queue(option.job.name, {
         redis: {
             port: option.redis.port || 6379,
             host: option.redis.host || '127.0.0.1',
-            db: option.redis.db || 0
+            db: option.redis.db || 0,
+            password: option.redis.password || ''
         },
         prefix: option.redis.prefix || 'job'
     });
 
     var job = {
-        addJob: function(job, id) {
+        addJob: function(job, id, priority) {
             return jobQueue.add(option.job.name, job, {
                 jobId: id,
-                timeout: option.job.limitsec * 1000
+                timeout: (option.job.limitsec) ? (option.job.limitsec * 1000) : null,
+                priority:priority,
+                removeOnComplete:option.job.removeOnComplete || false,
+                removeOnFail: option.job.removeOnFail ||false
             });
         },
         getJob: function(id) {

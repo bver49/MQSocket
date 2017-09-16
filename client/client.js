@@ -1,12 +1,21 @@
 module.exports = function(option, cb) {
     var Queue = require('bull');
+    option = option || {};
+    option.socket = option.socket || {};
+    option.job = option.job || {};
+    option.redis = option.redis || {};
     option.socket.host = option.socket.host || '127.0.0.1';
     option.job.name = option.job.name || 'job';
+    option.job.process = option.job.progress || function(done,job){
+        console.log(job);
+        console.log(`Job ${job.id} start!`);
+        done();
+    }
 
     var socket = require('socket.io-client')(option.socket.host, {
         query: {
             name: option.socket.name || `socket-${new Date().getTime()}`,
-            pw: option.socket.pw || '',
+            pw: option.socket.password || '',
             jobname:option.job.name
         }
     });
@@ -15,7 +24,8 @@ module.exports = function(option, cb) {
         redis: {
             port: option.redis.port || 6379,
             host: option.redis.host || '127.0.0.1',
-            db: option.redis.db || 0
+            db: option.redis.db || 0,
+            password: option.redis.password || ''
         },
         prefix: option.redis.prefix || 'job'
     });
@@ -28,7 +38,7 @@ module.exports = function(option, cb) {
             console.log('Connect to the server!');
         }
     });
-    
+
     socket.on('disconnect', function() {
         if (typeof option.job.onDisconnect === 'function') {
             option.job.onDisconnect();
@@ -164,5 +174,6 @@ module.exports = function(option, cb) {
         }
     });
 
-    cb(socket, jobQueue);
+    if(typeof option ==='function') option(socket, jobQueue);
+    if(typeof cb ==='function') cb(socket, jobQueue);
 }
