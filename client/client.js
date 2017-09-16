@@ -1,14 +1,16 @@
 module.exports = function(option, cb) {
     var Queue = require('bull');
     option.socket.host = option.socket.host || '127.0.0.1';
+    option.job.name = option.job.name || 'job';
+
     var socket = require('socket.io-client')(option.socket.host, {
         query: {
             name: option.socket.name || `socket-${new Date().getTime()}`,
-            pw: option.socket.pw || ``
+            pw: option.socket.pw || '',
+            jobname:option.job.name
         }
     });
 
-    option.job.name = option.job.name || 'job';
     var jobQueue = new Queue(option.job.name, {
         redis: {
             port: option.redis.port || 6379,
@@ -26,6 +28,7 @@ module.exports = function(option, cb) {
             console.log('Connect to the server!');
         }
     });
+    
     socket.on('disconnect', function() {
         if (typeof option.job.onDisconnect === 'function') {
             option.job.onDisconnect();
@@ -35,7 +38,7 @@ module.exports = function(option, cb) {
         }
     });
 
-    socket.on('pauseall', function() {
+    socket.on(`pauseall${option.job.name}`, function() {
         jobQueue.pause().then(function() {
             if (typeof option.job.onPauseall === 'function') {
                 option.job.onPauseall();
@@ -46,7 +49,7 @@ module.exports = function(option, cb) {
         });
     });
 
-    socket.on('resumeall', function() {
+    socket.on(`resumeall${option.job.name}`, function() {
         jobQueue.resume().then(function() {
             if (typeof option.job.onResumeall === 'function') {
                 option.job.onResumeall();
@@ -57,7 +60,7 @@ module.exports = function(option, cb) {
         });
     });
 
-    socket.on(`pause${option.socket.name}`, function() {
+    socket.on(`pause${option.job.name}${option.socket.name}`, function() {
         jobQueue.pause(true).then(function() {
             if (typeof option.job.onPause === 'function') {
                 option.job.onPause();

@@ -11,33 +11,29 @@ app.use(mq(server,{
         db:0
     },
     job:{
-        name:'job',
+        name:'jobA',
         limitsec:30
     }
 }));
 
-app.get('/',function(req,res){
-    req.jobQueue.addJob({
-        x:123,
-        y:12
-    });
-    res.send({
-        connectSocket:req.connectSocket
-    });
-});
+app.use(mq(server,{
+    redis:{
+        host: '127.0.0.1',
+        port: '32768',
+        db:1
+    },
+    job:{
+        name:'jobB',
+        limitsec:30
+    }
+}));
 
-app.get('/pause',function(req,res){
-    req.jobQueue.pauseall();
-    res.send({
-        connectSocket:req.connectSocket
+app.get('/A',function(req,res){
+    req.jobAMQ.addJob({
+        x:1,
+        y:2
     });
-});
-
-app.get('/resume',function(req,res){
-    req.jobQueue.resumeall();
-    res.send({
-        connectSocket:req.connectSocket
-    });
+    res.send(req.connectSocket);
 });
 
 server.listen(3000, function() {

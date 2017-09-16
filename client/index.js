@@ -14,9 +14,10 @@ client({
         prefix:'job'
     },
     job:{
-        name:'job',
+        name:'jobA',
         process:function(done,job){
             //define job
+            console.log("Start job A");
             job.progress(10);
             setTimeout(function(){
                 console.log(job.data.x/job.data.y);

@@ -3,7 +3,8 @@ var socketio = require('socket.io');
 
 module.exports = function(server, option) {
     var io = socketio(server);
-    var connectSocket = [];
+    var connectSocket = {};
+
     option.socket = option.socket || {};
     option.socket.pw = option.socket.pw || '';
     option.job.name = option.job.name || 'job'
@@ -12,52 +13,58 @@ module.exports = function(server, option) {
         redis: {
             port: option.redis.port || 6379,
             host: option.redis.host || '127.0.0.1',
-            db: option.redis.db ||0
+            db: option.redis.db || 0
         },
         prefix: option.redis.prefix || 'job'
     });
 
     var job = {
-        addJob:function(job,id) {
-            return jobQueue.add(option.job.name,job,{
+        addJob: function(job, id) {
+            return jobQueue.add(option.job.name, job, {
                 jobId: id,
-                timeout : option.job.limitsec * 1000
+                timeout: option.job.limitsec * 1000
             });
         },
-        getJob:function(id){
+        getJob: function(id) {
             return jobQueue.getJob(id);
         },
-        clean:function(type){
+        clean: function(type) {
             type = type || 'failed';
-            return jobQueue.clean(1000,type);
+            return jobQueue.clean(1000, type);
         },
-        empty:function(){
+        empty: function() {
             return jobQueue.clean(1000);
         },
-        jobCounts:function(){
+        jobCounts: function() {
             return jobQueue.getJobCounts();
         },
-        pauseall:function(){
-            io.emit('pauseall');
-            console.log('All worker has been paused!');
+        pauseall: function() {
+            io.emit(`pauseall${option.job.name}`);
+            console.log(`All worker on ${option.job.name} has been paused!`);
         },
-        resumeall:function(){
-            io.emit('resumeall');
-            console.log('All worker has been resumed!');
+        resumeall: function() {
+            io.emit(`resumeall${option.job.name}`);
+            console.log(`All workers on ${option.job.name} has been resumed!`);
         },
-        pause:function(name){
-            io.emit(`pause${name}`);
+        pause: function(name) {
+            io.emit(`pause${option.job.name}${name}`);
             console.log(`Worker ${name} has been paused!`);
         },
-        resume:function(name){
-            io.emit(`resume${name}`)
+        resume: function(name) {
+            io.emit(`resume${option.job.name}${name}`)
             console.log(`Worker ${name} has been resumed!`);
         }
     }
 
     io.on('connection', function(socket) {
+        this.ids = option.job.name;
         if (socket.handshake.query.pw === option.socket.pw) {
-            connectSocket.push(socket.handshake.query.name);
+            if (connectSocket[socket.handshake.query.jobname]) {
+                connectSocket[socket.handshake.query.jobname].push(socket.handshake.query.name);
+            }
+            else {
+                connectSocket[socket.handshake.query.jobname] = [socket.handshake.query.name];
+            }
             if (typeof option.socket.onConnect === 'function') {
                 option.socket.onConnect(socket);
             }
@@ -111,7 +118,9 @@ module.exports = function(server, option) {
             });
 
             socket.on('disconnect', function() {
-                connectSocket.splice(connectSocket.indexOf(socket.handshake.query.name), 1);
+                connectSocket[socket.handshake.query.jobname].splice(connectSocket[socket.handshake.query.jobname].indexOf(socket.handshake.query.name), 1);
+                if (connectSocket[socket.handshake.query.jobname].length == 0) delete connectSocket[socket.handshake.query.jobname];
+
                 if (typeof onDisconnect === 'function') {
                     option.socket.onDisconnect(socket);
                 }
@@ -126,9 +135,9 @@ module.exports = function(server, option) {
     });
 
     return function(req, res, next) {
-        req[`${option.job.name}MQ`].jobQueue = job;
-        req[`${option.job.name}MQ`].connect = connectSocket;
+        req.connectSocket = connectSocket;
         req.io = io;
+        req[`${option.job.name}MQ`] = job;
         next();
     }
 }
