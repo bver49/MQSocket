@@ -126,8 +126,8 @@ module.exports = function(server, option) {
     });
 
     return function(req, res, next) {
-        req[`${option.job.name}Queue`] = job;
-        req.connectSocket = connectSocket;
+        req[`${option.job.name}MQ`].jobQueue = job;
+        req[`${option.job.name}MQ`].connect = connectSocket;
         req.io = io;
         next();
     }
