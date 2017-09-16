@@ -14,10 +14,14 @@ client({
         prefix:'job'
     },
     job:{
-        name:'apkbuilder',
+        name:'job',
         process:function(done,job){
             //define job
-            done();
+            job.progress(10);
+            setTimeout(function(){
+                console.log(job.data.x/job.data.y);
+                done();
+            },5000);
         }
     }
 },function(socket){
