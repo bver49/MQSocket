@@ -8,13 +8,20 @@ app.use(mq(server));
 
 app.use(mq(server,{
     redis:{
-        host: '127.0.0.1',
-        port: '32768',
+        port: 32768
+    },
+    job:{
+        name:'jobA'
+    }
+}));
+
+app.use(mq(server,{
+    redis:{
+        port: 32768,
         db:1
     },
     job:{
-        name:'jobB',
-        limitsec:30
+        name:'jobB'
     }
 }));
 
@@ -22,9 +29,20 @@ app.get('/A',function(req,res){
     req.jobAMQ.addJob({
         x:1,
         y:2
+    }).then(function(job){
+        res.send({id:job.id});
     });
-    res.send(req.connectSocket);
 });
+
+app.get('/B',function(req,res){
+    req.jobBMQ.addJob({
+        x:1,
+        y:2
+    }).then(function(job){
+        res.send({id:job.id});
+    });
+});
+
 
 server.listen(3000, function() {
     console.log('Server on 3000!');

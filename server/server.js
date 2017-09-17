@@ -7,11 +7,11 @@ module.exports = function(server, option) {
     var connectSocket = {};
 
     option = option || {};
-    option.socket = option.socket || {};
-    option.socket.pw = option.socket.pw || '';
     option.job = option.job || {};
-    option.job.name = option.job.name || 'job'
     option.redis = option.redis || {};
+    option.socket = option.socket || {};
+    option.job.name = option.job.name || 'job'
+    option.socket.pw = option.socket.pw || '';
 
     var jobQueue = new Queue(option.job.name, {
         redis: {

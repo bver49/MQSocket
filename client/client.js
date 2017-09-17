@@ -1,35 +1,56 @@
-module.exports = function(option, cb) {
+module.exports = function(option,_process,cb) {
+
     var Queue = require('bull');
-    option = option || {};
-    option.socket = option.socket || {};
-    option.job = option.job || {};
-    option.redis = option.redis || {};
-    option.socket.host = option.socket.host || '127.0.0.1';
-    option.job.name = option.job.name || 'job';
-    option.job.process = option.job.progress || function(done,job){
-        console.log(job);
-        console.log(`Job ${job.id} start!`);
-        done();
+    var defaultprocess;
+    var defaultjobname;
+
+    if(typeof option === 'function'){
+        defaultprocess = option;
+        option = {}
+    }
+    else if(typeof option === 'string'){
+        defaultjobname = option;
+        option = {}
     }
 
-    var socket = require('socket.io-client')(option.socket.host, {
+    option.job = option.job || {};
+    option.redis = option.redis || {};
+    option.socket = option.socket || {};
+    option.socket.host = option.socket.host || 'http://127.0.0.1';
+    option.socket.port = option.socket.port || '3000';
+    option.socket.name = option.socket.name || `socket-${new Date().getTime()}`
+
+    if(typeof defaultjobname === 'string'){
+       option.job.name = defaultjobname;
+   }else{
+       option.job.name = option.job.name || 'job';
+   }
+
+    if(typeof defaultprocess === 'function'){
+        option.job.process = defaultprocess;
+    }else{
+        option.job.process = _process;
+    }
+
+    var socket = require('socket.io-client')(`${option.socket.host}:${option.socket.port}`, {
         query: {
-            name: option.socket.name || `socket-${new Date().getTime()}`,
+            name: option.socket.name,
             pw: option.socket.password || '',
-            jobname:option.job.name
+            jobname: option.job.name
         }
     });
 
     var jobQueue = new Queue(option.job.name, {
         redis: {
-            port: option.redis.port || 6379,
+            port: option.redis.port || 32768,
             host: option.redis.host || '127.0.0.1',
             db: option.redis.db || 0,
             password: option.redis.password || ''
         },
         prefix: option.redis.prefix || 'job'
     });
-
+    console.log(`Try to connect socker on ${option.socket.host}:${option.socket.port}`);
+    console.log(`Job name ${option.job.name}`);
     socket.on('connect', function() {
         if (typeof option.job.onConnect === 'function') {
             option.job.onConnect();
@@ -92,12 +113,11 @@ module.exports = function(option, cb) {
         });
     });
 
-    // job執行內容
     jobQueue.process(option.job.name, function(job, done) {
         if (typeof option.job.process === 'function') {
-            option.job.process(function() {
+            option.job.process(function(){
                 done();
-            }, job);
+            },job);
         }
         else {
             console.log("ERR: Has to defined process!");
@@ -135,14 +155,14 @@ module.exports = function(option, cb) {
     jobQueue.on('completed', function(job, result) {
         if (typeof option.job.onCompleted === 'function') {
             option.job.onCompleted(function(data) {
-                data = data || `Completed: Worker  ${option.socket.name} completed Job ${job.id}!`;
+                data = data || `Completed: Worker ${option.socket.name} completed Job ${job.id}!`;
                 console.log(`Completed: Job ${job.id}!`);
                 socket.emit('completed', data);
             }, job, result);
         }
         else {
-            console.log(`Completed: Job ${job.id}!`);
-            socket.emit('completed', `Completed: Worker  ${option.socket.name} completed Job ${job.id}!`);
+            console.log(`Completed: Job ${job.id}!\n`);
+            socket.emit('completed', `Completed: Worker ${option.socket.name} completed Job ${job.id}!`);
         }
     });
 
@@ -174,6 +194,7 @@ module.exports = function(option, cb) {
         }
     });
 
-    if(typeof option ==='function') option(socket, jobQueue);
-    if(typeof cb ==='function') cb(socket, jobQueue);
+    if (typeof _process === 'function' && typeof defaultprocess === 'function') _process(socket,jobQueue);
+    if (typeof cb === 'function') cb(socket,jobQueue);
+
 }
