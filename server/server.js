@@ -36,29 +36,29 @@ module.exports = function(server, option) {
         getJob: function(id) {
             return jobQueue.getJob(id);
         },
-        clean: function(type) {
+        Clean: function(type) {
             type = type || 'failed';
             return jobQueue.clean(1000, type);
         },
-        empty: function() {
+        Empty: function() {
             return jobQueue.clean(1000);
         },
         jobCounts: function() {
             return jobQueue.getJobCounts();
         },
-        pauseall: function() {
+        pauseAll: function() {
             io.emit(`pauseall${option.job.name}`);
             console.log(`All worker on ${option.job.name} has been paused!`);
         },
-        resumeall: function() {
+        resumeAll: function() {
             io.emit(`resumeall${option.job.name}`);
             console.log(`All workers on ${option.job.name} has been resumed!`);
         },
-        pause: function(name) {
+        Pause: function(name) {
             io.emit(`pause${option.job.name}${name}`);
             console.log(`Worker ${name} has been paused!`);
         },
-        resume: function(name) {
+        Resume: function(name) {
             io.emit(`resume${option.job.name}${name}`)
             console.log(`Worker ${name} has been resumed!`);
         }
