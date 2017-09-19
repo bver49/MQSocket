@@ -250,16 +250,18 @@ Require the module
 var client = require('./mqsocket/client');
 ```
 
-#### Easy way
+#### Simple
 
 ```js
-client(jobname,process,cb);
-```
+client(jobName,process,cb?);
 
-```js
-jobname : STRING         // Name of the job
-process : FUNCTION(done,job)  // Defined the process of the job, call done() when process done
-cb? : FUNCTION(socket,jobQueue)  
+/*
+*
+* jobname : STRING                  // Name of the job
+* process : FUNCTION(done,job)      // Defined the process of the job, call done() when process done
+* cb? : FUNCTION(socket,jobQueue) 
+*
+*/
 ```
 
 #### Custom
@@ -300,4 +302,26 @@ interface Opts {
 
 ### Defined process
 
+```js
+/*
+* client(jobName,process,cb?);
+* client(Opts,process,cb?);
+* process : FUNCTION(done,job)
+*
+*/
 
+client('job',function(done,job){
+    
+    // Do some works
+    job.progress(10); // Update progress
+    
+    // Do other works
+    job.progress(50); // Update progress
+    
+    // Call done() when the job done
+    done();    
+    
+    // Call done() with a result
+    done(null,result);
+});
+```
