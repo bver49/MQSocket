@@ -64,20 +64,20 @@ Setting in Opts
 ```js
 interface Opts {
   redis:{
-    port? : NUMBER = 6379,              //Port for the redis.
-    host? : STRING = '127.0.0.1',       //Host for the redis. 
+    port? : NUMBER = 6379,              //Port of the redis.
+    host? : STRING = '127.0.0.1',       //Host of the redis. 
     db? : NUMBER = 0,                   //Redis database use for the queue.
-    password? : STRING = '',            //Redis password. 
+    password? : STRING = '',            //Password of redis. 
     prefix? : STRING = 'job'            //Data prefix in the redis.
   },
   job:{
-    name? : STRING = 'job',              //Name for the job.
+    name? : STRING = 'job',              //Name of the job.
     limitsec? : NUMBER = null,           //Limit time for job process. 
     removeOnComplete? : BOOLEAN = false  //Remove the job from the queue when job completed
     removeOnFail? : BOOLEAN = false      //Remove the job from the queue when job failed
   },
   socket:{
-    password? : STRING = ''              //Password for the socket server
+    password? : STRING = ''              //Password of the socket server
     onConnect? : FUNCTION(socket)        //Execute when a socket client connect to the server
     onActive? : FUNCTION(data)           //Execute when a job start 
     onProgress? : FUNCTION(data)         //Execute when the progress of the job has been update 
@@ -210,5 +210,94 @@ app.get('/',function(req,res){
 });
 ```
 
+## Client
+
+### Quick Guide
+
+```js
+var client = require('./mqsocket/client');
+
+//Easy way
+
+client('jobA',function(done,job){
+    console.log(`JobA ${job.id} start!`);
+    console.log('Value:' + JSON.stringify(job.data,null,4));
+    done();
+});
+
+//Custom usage
+
+client({
+    job:{
+        name:'jobB'
+    },
+    redis:{
+        db:1
+    }
+},function(done,job){
+    console.log(`JobB ${job.id} start!`);
+    console.log('Value:' + JSON.stringify(job.data,null,4));
+    done();
+});
+
+```
+
+### Setting
+
+Require the module
+
+```js
+var client = require('./mqsocket/client');
+```
+
+#### Easy way
+
+```js
+client(jobname,process,cb);
+```
+
+```js
+jobname : STRING         // Name of the job
+process : FUNCTION(done,job)  // Defined the process of the job, call done() when process done
+cb? : FUNCTION(socket,jobQueue)  
+```
+
+#### Custom
+
+```js
+client(Opts,process,cb);
+```
+
+##### Setting in Opts
+
+```js
+interface Opts {
+  redis:{
+    port? : NUMBER = 6379                  //Port of the redis.
+    host? : STRING = '127.0.0.1'           //Host of the redis. 
+    db? : NUMBER = 0                       //Redis database use for the queue.
+    password? : STRING = ''                //Password of redis. 
+    prefix? : STRING = 'job'               //Data prefix in the redis.
+  },
+  job:{
+    name? : STRING = 'job',                //Name of the job.  
+    onActive? : FUNCTION(cb,job)           //Execute when a job start, call cb(msg) to send msg back to server
+    onProgress? : FUNCTION(cb,job,progres) //Execute when the progress of the job has been update, call cb(msg) to send msg back to server
+    onCompleted? : FUNCTION(cb,job,result) //Execute when a job completed, call cb(msg) to send msg back to server
+    onError? : FUNCTION(cb,err)            //Execute when error, call cb(msg) to send msg back to server 
+    onFailed? : FUNCTION(cb,err)           //Execute when a job failed, call cb(msg) to send msg back to server   
+  },
+  socket:{
+    password? : STRING = '',               //Password for the socket server.
+    host? : STRING = '127.0.0.1'           //Host for the socket server. 
+    port? : NUMBER = '3000'                //Port for the socket server.
+    name? : NAME = 'socket-TIMESTAMP'      //Name of the socket client.
+    onConnect? : FUNCTION(socket)          //Execute when a socket client connect to the server
+    onDisconnect? : FUNCTION(data)         //Execute when a socket client disconnect with the server
+  }
+}
+```
+
+### Defined process
 
 
