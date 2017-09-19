@@ -280,7 +280,7 @@ interface Opts {
     prefix? : STRING = 'job'               //Data prefix in the redis.
   },
   job:{
-    name? : STRING = 'job',                //Name of the job.  
+    name? : STRING = 'job',                //Determine what job this client work on.  
     onActive? : FUNCTION(cb,job)           //Execute when a job start, call cb(msg) to send msg back to server
     onProgress? : FUNCTION(cb,job,progres) //Execute when the progress of the job has been update, call cb(msg) to send msg back to server
     onCompleted? : FUNCTION(cb,job,result) //Execute when a job completed, call cb(msg) to send msg back to server
