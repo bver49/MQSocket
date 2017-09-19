@@ -168,11 +168,11 @@ module.exports = function(option,_process,cb) {
 
     jobQueue.on('error', function(err) {
         if (typeof option.job.onError === 'function') {
-            option.job.onError(err, function(data) {
+            option.job.onError(function(data) {
                 data = data || err;
                 console.log(`${err}`);
                 socket.emit('err', data);
-            });
+            },err);
         }
         else {
             console.log(`${err}`);
@@ -182,11 +182,11 @@ module.exports = function(option,_process,cb) {
 
     jobQueue.on('failed', function(err) {
         if (typeof option.job.onFailed === 'function') {
-            option.job.onFailed(err, function(data) {
+            option.job.onFailed(function(data) {
                 data = data || `Fail: Worker ${option.socket.name} Fail on Job ${err.id} ${err.failedReason}!`;
                 console.log(`Fail on Job ${err.id} ${err.failedReason}!`);
                 socket.emit('fail', data);
-            });
+            },err);
         }
         else {
             console.log(`Fail on Job ${err.id} ${err.failedReason}!`);
