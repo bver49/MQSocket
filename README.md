@@ -95,30 +95,30 @@ Control queue and job in route
 
 Use the method in req.jobnameMQ
 
-#### Add Job
+#### addJob() -> Promise <job>
 
 Add a job into the queue
 
 ```js
 app.get('/',function(req,res){
-  res.jobnameMQ.addJob({
+  req.jobnameMQ.addJob({
     key1:value1
   });
 });
 ```
 
-#### Get Job
+#### getJob(jobid) -> Promise <data>
 
 Get the progress and data of the job by jobid
 
 ```js
 app.get('/',function(req,res){
-  res.jobnameMQ.getJob(jobid).then(function(data){
+  req.jobnameMQ.getJob(jobid).then(function(data){
   });
 });
 ```
 
-#### Clean queue
+#### clean() -> Promise <job,type>
 
 Clean the job in the queue
 
@@ -126,72 +126,72 @@ Type : wait,active,completed,failed,delayed
 
 ```js
 app.get('/',function(req,res){
-  res.jobnameMQ.clean(type);
+  req.jobnameMQ.clean(type);
   res.send('ok');
 });
 ```
 
-#### Job count
+#### jobCount -> Promise <data>
 
 Retuen the amount of the job in the queue
 
 ```js
 app.get('/',function(req,res){
-  res.jobnameMQ.jobCounts().then(function(data){
+  req.jobnameMQ.jobCounts().then(function(data){
     res.send(data);
   });
 });
 ```
 
-#### Pause all client
+#### pauseAll() -> Promise
 
 Pause all client working for the job
 
 ```js
 app.get('/',function(req,res){
-  res.jobnameMQ.pauseall();
+  req.jobnameMQ.pauseall();
   res.send('ok');
 });
 ```
 
-#### Resume all client
+#### resumeAll() -> Promise
 
 Resume all client working for the job
 
 ```js
 app.get('/',function(req,res){
-  res.jobnameMQ.resumeall();
+  req.jobnameMQ.resumeall();
   res.send('ok');
 });
 ```
 
-#### Pause a client
+#### Pause() -> Promise
 
 Pause a client working for the job by client name
 
 ```js
 app.get('/',function(req,res){
-  res.jobnameMQ.pause(clientName);
+  req.jobnameMQ.pause(clientName);
   res.send('ok');
 });
 ```
 
-#### Resume a client
+#### Resume() -> Promise
 
 Resume a client working for the job by client name
 
 ```js
 app.get('/',function(req,res){
-  res.jobnameMQ.resume(clientName);
+  req.jobnameMQ.resume(clientName);
   res.send('ok');
 });
 ```
 
 ### Other
 
-#### Connect sockets
+#### Connect socket (req.connectSocket)
 
-Show name of job queue and client names work on the job control by this server.
+Show names of job queue and client names work on the job control by this server.
 
 ```js
 app.get('/',function(req,res){
@@ -199,14 +199,14 @@ app.get('/',function(req,res){
 });
 ```
 
-#### Socket
+#### Socket (req.io)
 
 Object of the socket.
 
 ```js
 app.get('/',function(req,res){
   req.io.emit('Some massage');   //emit message to client
-  req.send('ok');
+  res.send('ok');
 });
 ```
 
