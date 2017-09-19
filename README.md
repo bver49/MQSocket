@@ -118,7 +118,7 @@ app.get('/',function(req,res){
 });
 ```
 
-#### clean() -> Promise <job,type>
+#### Clean() -> Promise <job,type>
 
 Clean the job in the queue
 
