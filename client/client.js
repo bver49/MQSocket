@@ -52,8 +52,8 @@ module.exports = function(option,_process,cb) {
     console.log(`Try to connect socker on ${option.socket.host}:${option.socket.port}`);
     console.log(`Job name ${option.job.name}`);
     socket.on('connect', function() {
-        if (typeof option.job.onConnect === 'function') {
-            option.job.onConnect();
+        if (typeof option.socket.onConnect === 'function') {
+            option.socket.onConnect();
         }
         else {
             console.log('Connect to the server!');
@@ -61,8 +61,8 @@ module.exports = function(option,_process,cb) {
     });
 
     socket.on('disconnect', function() {
-        if (typeof option.job.onDisconnect === 'function') {
-            option.job.onDisconnect();
+        if (typeof option.socket.onDisconnect === 'function') {
+            option.socket.onDisconnect();
         }
         else {
             console.log('Disconnect with the server!');
@@ -130,7 +130,7 @@ module.exports = function(option,_process,cb) {
                 data = data || `Active: Worker ${option.socket.name} start working on Job ${job.id}!`;
                 console.log(`Active: Start working on Job ${job.id}!`);
                 socket.emit('active', data);
-            }, job, result);
+            }, job);
         }
         else {
             console.log(`Active: Start working on Job ${job.id}!`);
