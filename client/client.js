@@ -115,9 +115,7 @@ module.exports = function(option,_process,cb) {
 
     jobQueue.process(option.job.name, function(job, done) {
         if (typeof option.job.process === 'function') {
-            option.job.process(function(){
-                done();
-            },job);
+            option.job.process(done,job);
         }
         else {
             console.log("ERR: Has to defined process!");
